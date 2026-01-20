@@ -23,18 +23,32 @@ def process_audio_file(file_path: str, title: str = None, artist: str = None) ->
     
     Args:
         file_path: Path to audio file
-        title: Song title (defaults to filename)
-        artist: Artist name (defaults to "Unknown")
+        title: Song title (defaults to parsed from filename)
+        artist: Artist name (defaults to parsed from filename or "Unknown")
     
     Returns:
         song_id: ID of the created song
     """
     # Extract metadata from filename if not provided
-    if title is None:
-        title = Path(file_path).stem
-    
-    if artist is None:
-        artist = "Unknown"
+    if title is None or artist is None:
+        filename = Path(file_path).stem
+        
+        # Try to parse "Artist - Title" format
+        if ' - ' in filename:
+            parts = filename.split(' - ', 1)  # Split only on first occurrence
+            parsed_artist = parts[0].strip()
+            parsed_title = parts[1].strip()
+            
+            if artist is None:
+                artist = parsed_artist
+            if title is None:
+                title = parsed_title
+        else:
+            # No separator found, use filename as title
+            if title is None:
+                title = filename
+            if artist is None:
+                artist = "Unknown"
     
     logger.info(f"Processing: {title} by {artist}")
     

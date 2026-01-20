@@ -1,0 +1,32 @@
+# ============================================
+# VESPER SONG RECOGNITION - SIMPLE SETUP
+# ============================================
+# Follow these commands in order
+
+# STEP 1: Edit the .env file
+# Open .env file and change this line:
+# DB_PASSWORD=postgres
+# Replace 'postgres' with YOUR actual PostgreSQL password
+
+# STEP 2: Install dependencies
+pip install -r requirements.txt
+
+# STEP 3: Add 3-5 MP3 songs to the dataset folder
+# Just drag and drop MP3 files into: dataset\
+
+# STEP 4: Populate database with songs
+python -m app.services.populate_db
+
+# STEP 5: Start the server
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# ============================================
+# SERVER WILL RUN AT: http://localhost:8000
+# ============================================
+
+# To test from browser, visit:
+# http://localhost:8000/docs
+
+# To use from mobile app, send POST request to:
+# http://YOUR_IP_ADDRESS:8000/api/identify
+# (See MOBILE_APP_INTEGRATION.md for code examples)
