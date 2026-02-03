@@ -1,6 +1,7 @@
 # Quick Start Guide - Vesper Song Recognition
 
 ## ✅ What You Already Have
+
 - PostgreSQL database: `VesperSongData`
 - Tables: `songs` and `fingerprints`
 
@@ -28,11 +29,14 @@ DB_PASSWORD=your_password_here
 You have **TWO OPTIONS**:
 
 #### Option A: Use Cloud Storage (RECOMMENDED for production)
+
 If your MP3s are in cloud storage, you can:
+
 1. Download a few sample songs (3-5 songs) to the `dataset/` folder for testing
 2. Later, modify `populate_db.py` to fetch from cloud storage
 
 #### Option B: Use Local Dataset Folder (EASIEST for testing)
+
 1. Copy 3-5 MP3 songs to the `dataset/` folder
 2. Run the population script (see below)
 
@@ -50,6 +54,7 @@ python -m app.services.populate_db
 ```
 
 This will:
+
 - Read all MP3/WAV files from `dataset/`
 - Generate fingerprints for each song
 - Store them in your `VesperSongData` database
@@ -62,8 +67,8 @@ This will:
 # Start the server
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
-`
-The server will run at: `http://localhost:8000`
+
+`The server will run at:`http://localhost:8000`
 
 ---
 
@@ -72,17 +77,20 @@ The server will run at: `http://localhost:8000`
 Once the server is running, your mobile app can send songs to recognize:
 
 ### API Endpoint
+
 ```
 POST http://your-server-ip:8000/api/identify
 ```
 
 ### Request Format
+
 - **Method**: POST
 - **Content-Type**: multipart/form-data
 - **Field name**: `audio_file`
 - **File**: MP3 or WAV audio file
 
 ### Example Response (Success)
+
 ```json
 {
   "success": true,
@@ -95,6 +103,7 @@ POST http://your-server-ip:8000/api/identify
 ```
 
 ### Example Response (Not Found)
+
 ```json
 {
   "success": false,
@@ -107,9 +116,11 @@ POST http://your-server-ip:8000/api/identify
 ## 🧪 Quick Test
 
 ### Test 1: Check if server is running
+
 Open browser: `http://localhost:8000`
 
 You should see:
+
 ```json
 {
   "message": "Audio Fingerprinting API",
@@ -118,6 +129,7 @@ You should see:
 ```
 
 ### Test 2: Test with a sample file
+
 ```bash
 # Using curl (if you have it)
 curl -X POST "http://localhost:8000/api/identify" -F "audio_file=@path/to/test.mp3"
@@ -134,19 +146,25 @@ curl -X POST "http://localhost:8000/api/identify" -F "audio_file=@path/to/test.m
 ## 🔧 Troubleshooting
 
 ### Problem: "Database connection failed"
-**Solution**: 
+
+**Solution**:
+
 1. Make sure PostgreSQL is running
 2. Check your `.env` file has correct password
 3. Test connection: `psql -U postgres -d VesperSongData`
 
 ### Problem: "No songs in database"
-**Solution**: 
+
+**Solution**:
+
 1. Make sure you have MP3 files in `dataset/` folder
 2. Run: `python -m app.services.populate_db`
 3. Check: `psql -U postgres -d VesperSongData -c "SELECT COUNT(*) FROM songs;"`
 
 ### Problem: "Module not found"
-**Solution**: 
+
+**Solution**:
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -200,11 +218,13 @@ When you're ready to deploy:
 ## ❓ Need Help?
 
 Run the test script to verify everything:
+
 ```bash
 python test_system.py
 ```
 
 This will check:
+
 - ✓ Database connection
 - ✓ Audio files in dataset
 - ✓ Fingerprinting works

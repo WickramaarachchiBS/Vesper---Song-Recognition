@@ -3,7 +3,9 @@
 ## 📱 How to Connect Your Mobile App to the Server
 
 ### Overview
+
 Your mobile app needs to:
+
 1. Record or select an audio file
 2. Send it to the server via HTTP POST
 3. Receive the recognition result
@@ -17,6 +19,7 @@ POST http://YOUR_SERVER_IP:8000/api/identify
 ```
 
 **Replace `YOUR_SERVER_IP` with:**
+
 - `localhost` or `127.0.0.1` - if testing on same machine
 - `192.168.x.x` - if testing on local network (find your PC's IP)
 - `your-domain.com` - if deployed to production server
@@ -26,11 +29,13 @@ POST http://YOUR_SERVER_IP:8000/api/identify
 ## 📤 Request Format
 
 ### Headers
+
 ```
 Content-Type: multipart/form-data
 ```
 
 ### Body
+
 - **Field name**: `audio_file`
 - **File type**: MP3, WAV, FLAC, OGG, or M4A
 - **Recommended**: 10-30 seconds of audio
@@ -40,6 +45,7 @@ Content-Type: multipart/form-data
 ## 📥 Response Format
 
 ### Success Response
+
 ```json
 {
   "success": true,
@@ -53,6 +59,7 @@ Content-Type: multipart/form-data
 ```
 
 ### No Match Response
+
 ```json
 {
   "success": false,
@@ -61,6 +68,7 @@ Content-Type: multipart/form-data
 ```
 
 ### Error Response
+
 ```json
 {
   "detail": "Error message here"
@@ -76,31 +84,31 @@ Content-Type: multipart/form-data
 ```javascript
 async function recognizeSong(audioUri) {
   const formData = new FormData();
-  formData.append('audio_file', {
+  formData.append("audio_file", {
     uri: audioUri,
-    type: 'audio/mp3',
-    name: 'recording.mp3',
+    type: "audio/mp3",
+    name: "recording.mp3",
   });
 
   try {
-    const response = await fetch('http://YOUR_SERVER_IP:8000/api/identify', {
-      method: 'POST',
+    const response = await fetch("http://YOUR_SERVER_IP:8000/api/identify", {
+      method: "POST",
       body: formData,
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
     });
 
     const result = await response.json();
-    
+
     if (result.success) {
       console.log(`Found: ${result.title} by ${result.artist}`);
       console.log(`Confidence: ${result.confidence}%`);
     } else {
-      console.log('Song not found');
+      console.log("Song not found");
     }
   } catch (error) {
-    console.error('Error:', error);
+    console.error("Error:", error);
   }
 }
 ```
@@ -114,7 +122,7 @@ import 'dart:convert';
 Future<void> recognizeSong(String audioFilePath) async {
   var uri = Uri.parse('http://YOUR_SERVER_IP:8000/api/identify');
   var request = http.MultipartRequest('POST', uri);
-  
+
   request.files.add(
     await http.MultipartFile.fromPath('audio_file', audioFilePath)
   );
@@ -145,7 +153,7 @@ import java.io.File
 
 fun recognizeSong(audioFile: File) {
     val client = OkHttpClient()
-    
+
     val requestBody = MultipartBody.Builder()
         .setType(MultipartBody.FORM)
         .addFormDataPart(
@@ -162,12 +170,12 @@ fun recognizeSong(audioFile: File) {
 
     client.newCall(request).execute().use { response ->
         val result = JSONObject(response.body?.string() ?: "")
-        
+
         if (result.getBoolean("success")) {
             val title = result.getString("title")
             val artist = result.getString("artist")
             val confidence = result.getDouble("confidence")
-            
+
             println("Found: $title by $artist")
             println("Confidence: $confidence%")
         } else {
@@ -186,32 +194,32 @@ func recognizeSong(audioFileURL: URL) {
     let url = URL(string: "http://YOUR_SERVER_IP:8000/api/identify")!
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
-    
+
     let boundary = UUID().uuidString
     request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-    
+
     var data = Data()
-    
+
     // Add audio file
     data.append("--\(boundary)\r\n".data(using: .utf8)!)
     data.append("Content-Disposition: form-data; name=\"audio_file\"; filename=\"recording.mp3\"\r\n".data(using: .utf8)!)
     data.append("Content-Type: audio/mp3\r\n\r\n".data(using: .utf8)!)
     data.append(try! Data(contentsOf: audioFileURL))
     data.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
-    
+
     request.httpBody = data
-    
+
     URLSession.shared.dataTask(with: request) { data, response, error in
         guard let data = data,
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             return
         }
-        
+
         if let success = json["success"] as? Bool, success {
             let title = json["title"] as? String ?? ""
             let artist = json["artist"] as? String ?? ""
             let confidence = json["confidence"] as? Double ?? 0
-            
+
             print("Found: \(title) by \(artist)")
             print("Confidence: \(confidence)%")
         } else {
@@ -228,12 +236,14 @@ func recognizeSong(audioFileURL: URL) {
 ### 1. Find Your Server IP
 
 **Windows:**
+
 ```bash
 ipconfig
 # Look for IPv4 Address under your network adapter
 ```
 
 **Mac/Linux:**
+
 ```bash
 ifconfig
 # or
@@ -243,6 +253,7 @@ ip addr show
 ### 2. Test from Mobile Device
 
 Make sure:
+
 - ✅ Server is running: `uvicorn app.main:app --reload --host 0.0.0.0 --port 8000`
 - ✅ Mobile device is on same WiFi network
 - ✅ Firewall allows port 8000
@@ -250,6 +261,7 @@ Make sure:
 ### 3. Quick Test with Browser
 
 On your mobile device, open browser and visit:
+
 ```
 http://YOUR_SERVER_IP:8000
 ```
@@ -269,6 +281,7 @@ For production, you should:
 5. **Rate limiting** to prevent abuse
 
 Example production URL:
+
 ```
 https://api.vesper-music.com/api/identify
 ```
@@ -278,23 +291,26 @@ https://api.vesper-music.com/api/identify
 ## 💡 Tips for Mobile App
 
 ### Audio Recording
+
 - **Duration**: 10-30 seconds is optimal
 - **Quality**: Higher quality = better recognition
 - **Format**: MP3 or WAV recommended
 - **Sample rate**: 44.1 kHz or higher
 
 ### User Experience
+
 - Show loading indicator while processing
 - Display confidence score to user
 - Handle "not found" gracefully
 - Cache results to avoid duplicate requests
 
 ### Error Handling
+
 ```javascript
 // Example error handling
 try {
   const result = await recognizeSong(audioUri);
-  
+
   if (result.success) {
     if (result.confidence > 70) {
       // High confidence - show result
@@ -317,39 +333,43 @@ try {
 
 ## 📊 Response Fields Explained
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `success` | boolean | `true` if song found, `false` otherwise |
-| `song_id` | integer | Database ID of the song |
-| `title` | string | Song title |
-| `artist` | string | Artist name |
-| `match_count` | integer | Number of matching fingerprints |
-| `confidence` | float | Confidence score (0-100%) |
-| `total_fingerprints` | integer | Total fingerprints in query |
-| `message` | string | Error/info message (when success=false) |
+| Field                | Type    | Description                             |
+| -------------------- | ------- | --------------------------------------- |
+| `success`            | boolean | `true` if song found, `false` otherwise |
+| `song_id`            | integer | Database ID of the song                 |
+| `title`              | string  | Song title                              |
+| `artist`             | string  | Artist name                             |
+| `match_count`        | integer | Number of matching fingerprints         |
+| `confidence`         | float   | Confidence score (0-100%)               |
+| `total_fingerprints` | integer | Total fingerprints in query             |
+| `message`            | string  | Error/info message (when success=false) |
 
 ---
 
 ## ❓ Troubleshooting
 
 ### "Network request failed"
+
 - Check server is running
 - Verify IP address is correct
 - Ensure mobile device is on same network
 - Check firewall settings
 
 ### "Connection refused"
+
 - Server might not be running
 - Wrong port number
 - Server not listening on 0.0.0.0
 
 ### "Song not found" but should be in database
+
 - Check song was actually added to database
 - Try longer audio clip (15-30 seconds)
 - Ensure good audio quality
 - Check for background noise
 
 ### Slow response
+
 - Large file size - compress audio before sending
 - Server processing time - normal for first request
 - Network speed - use WiFi instead of cellular

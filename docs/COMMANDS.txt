@@ -1,0 +1,5 @@
+# VESPER SONG RECOGNITION - SIMPLE SETUP
+
+Follow the pointers in the project `docs/` directory for setup and deployment.
+
+Full commands moved to: docs/QUICK_START.md and docs/DEPLOY_QUICK.md

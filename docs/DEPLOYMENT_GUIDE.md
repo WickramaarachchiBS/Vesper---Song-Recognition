@@ -3,6 +3,7 @@
 ## 🎓 Best Free Hosting Platforms for Students
 
 ### ⭐ **RECOMMENDED: Render.com** (Easiest)
+
 - **Free Tier**: 750 hours/month (enough for 24/7)
 - **PostgreSQL**: Free database included
 - **Auto-deploy**: From GitHub
@@ -11,6 +12,7 @@
 - **Perfect for**: Students, FYP projects
 
 ### 🐍 **Railway.app** (Great for Python)
+
 - **Free Tier**: $5 credit/month (usually enough)
 - **PostgreSQL**: Included
 - **Easy setup**: One-click deploy
@@ -18,16 +20,19 @@
 - **Perfect for**: Active development
 
 ### 🚀 **Fly.io** (Good Performance)
+
 - **Free Tier**: 3 VMs, 3GB storage
 - **PostgreSQL**: Free tier available
 - **Global CDN**: Fast worldwide
 - **Perfect for**: Production apps
 
 ### 🔵 **Heroku** (Classic Choice)
+
 - **Free Tier**: Removed (now paid only)
 - ❌ **Not recommended** for free hosting anymore
 
 ### 🆓 **PythonAnywhere** (Python-specific)
+
 - **Free Tier**: Limited but permanent
 - **MySQL**: Free (not PostgreSQL)
 - **Good for**: Simple apps
@@ -44,6 +49,7 @@ I'll show you step-by-step how to deploy on **Render.com** (completely free for 
 ## 📋 Step-by-Step: Deploy to Render.com
 
 ### Prerequisites
+
 1. GitHub account (free)
 2. Render.com account (free) - sign up at https://render.com
 
@@ -54,7 +60,9 @@ I'll show you step-by-step how to deploy on **Render.com** (completely free for 
 I'll create the necessary configuration files:
 
 #### A. Create `render.yaml` (deployment config)
+
 #### B. Update `requirements.txt` (add production server)
+
 #### C. Create startup script
 
 ---
@@ -136,13 +144,16 @@ Or use Render's web shell to run the schema.
 ### Step 5: Upload Songs
 
 **Option 1**: Use cloud storage (recommended)
+
 - Upload MP3s to Google Drive, Dropbox, or AWS S3
 - Use `populate_from_cloud.py` script
 
 **Option 2**: Use Render's persistent disk (paid)
+
 - Not available on free tier
 
 **Option 3**: Populate from local, connect to remote DB
+
 - Run `populate_db.py` locally but connect to Render's database
 
 ---
@@ -159,21 +170,23 @@ Use this URL in your mobile app!
 
 ## 💰 Cost Comparison
 
-| Platform | Free Tier | Database | Sleep? | Best For |
-|----------|-----------|----------|--------|----------|
-| **Render** | 750h/month | PostgreSQL ✓ | Yes (30min) | Students |
-| **Railway** | $5 credit/month | PostgreSQL ✓ | No | Active dev |
-| **Fly.io** | 3 VMs | PostgreSQL ✓ | No | Production |
-| **PythonAnywhere** | Forever | MySQL only | No | Simple apps |
+| Platform           | Free Tier       | Database     | Sleep?      | Best For    |
+| ------------------ | --------------- | ------------ | ----------- | ----------- |
+| **Render**         | 750h/month      | PostgreSQL ✓ | Yes (30min) | Students    |
+| **Railway**        | $5 credit/month | PostgreSQL ✓ | No          | Active dev  |
+| **Fly.io**         | 3 VMs           | PostgreSQL ✓ | No          | Production  |
+| **PythonAnywhere** | Forever         | MySQL only   | No          | Simple apps |
 
 ---
 
 ## 🎓 Student Benefits (Get More Free Credits!)
 
 ### GitHub Student Developer Pack
+
 **Get**: https://education.github.com/pack
 
 **Includes**:
+
 - **DigitalOcean**: $200 credit (1 year)
 - **Heroku**: Free credits
 - **Azure**: $100 credit
@@ -181,6 +194,7 @@ Use this URL in your mobile app!
 - **MongoDB Atlas**: Free cluster
 
 ### Apply with:
+
 - Student email (.edu)
 - Student ID card
 - Enrollment verification
@@ -209,15 +223,17 @@ This gives you **33 months free** with student credits!
 ## 📱 Update Mobile App
 
 Change API endpoint from:
+
 ```javascript
 // Local
-const API_URL = 'http://192.168.1.x:8000/api/identify';
+const API_URL = "http://192.168.1.x:8000/api/identify";
 ```
 
 To:
+
 ```javascript
 // Production
-const API_URL = 'https://vesper-song-recognition.onrender.com/api/identify';
+const API_URL = "https://vesper-song-recognition.onrender.com/api/identify";
 ```
 
 ---
@@ -225,12 +241,14 @@ const API_URL = 'https://vesper-song-recognition.onrender.com/api/identify';
 ## ⚡ Important Notes
 
 ### Render Free Tier Limitations:
+
 - **Sleeps after 15 min** of inactivity
 - **First request** takes ~30 seconds to wake up
 - **750 hours/month** = ~24/7 for one month
 - **Good for**: FYP demos, testing
 
 ### Solutions:
+
 1. **Keep-alive ping**: Ping your API every 10 minutes
 2. **Show loading**: "Waking up server..." message
 3. **Upgrade**: $7/month for always-on
@@ -240,16 +258,19 @@ const API_URL = 'https://vesper-song-recognition.onrender.com/api/identify';
 ## 🔧 Troubleshooting
 
 ### "Application failed to start"
+
 - Check logs in Render dashboard
 - Verify `requirements.txt` is complete
 - Check start command is correct
 
 ### "Database connection failed"
+
 - Verify environment variables
 - Check database URL is correct
 - Ensure database is in same region
 
 ### "Songs not found"
+
 - Database is empty
 - Need to populate songs first
 - Use cloud storage or local populate
@@ -259,16 +280,19 @@ const API_URL = 'https://vesper-song-recognition.onrender.com/api/identify';
 ## 📊 Recommended Setup for FYP
 
 **For Development/Testing:**
+
 - **Render.com** (free)
 - **PostgreSQL** on Render (free)
 - **Songs**: 10-20 sample songs
 
 **For Demo/Presentation:**
+
 - **Railway.app** ($5 credit)
 - Always-on, no sleep
 - Fast response times
 
 **For Production (after graduation):**
+
 - **DigitalOcean** ($6/month)
 - Full control
 - Scalable

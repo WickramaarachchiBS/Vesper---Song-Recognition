@@ -3,6 +3,7 @@
 ## For Render.com (Recommended - FREE)
 
 ### 1. Push to GitHub
+
 ```bash
 git init
 git add .
@@ -12,6 +13,7 @@ git push -u origin main
 ```
 
 ### 2. On Render.com Dashboard
+
 1. Go to https://render.com
 2. Sign up with GitHub
 3. Click "New +" → "Web Service"
@@ -24,6 +26,7 @@ git push -u origin main
 8. Deploy!
 
 ### 3. Your API URL
+
 ```
 https://your-app-name.onrender.com/api/identify
 ```
@@ -35,6 +38,7 @@ https://your-app-name.onrender.com/api/identify
 ### 1. Push to GitHub (same as above)
 
 ### 2. On Railway Dashboard
+
 1. Go to https://railway.app
 2. Sign up with GitHub
 3. Click "New Project" → "Deploy from GitHub"
@@ -44,6 +48,7 @@ https://your-app-name.onrender.com/api/identify
 7. Deploy automatically
 
 ### 3. Your API URL
+
 ```
 https://your-app-name.up.railway.app/api/identify
 ```
@@ -61,6 +66,7 @@ DB_PASSWORD=<your-database-password>
 ```
 
 Or single variable:
+
 ```env
 DATABASE_URL=postgresql://user:password@host:port/database
 ```
@@ -70,12 +76,14 @@ DATABASE_URL=postgresql://user:password@host:port/database
 ## After Deployment
 
 ### Initialize Database
+
 ```bash
 # Connect to your database and run:
 psql <DATABASE_URL> -f sql/schema.sql
 ```
 
 ### Populate Songs
+
 Use cloud storage option or connect locally to remote database.
 
 ---
@@ -96,8 +104,9 @@ curl -X POST "https://your-app-name.onrender.com/api/identify" \
 ## Update Mobile App
 
 Change API endpoint to your deployed URL:
+
 ```javascript
-const API_URL = 'https://your-app-name.onrender.com/api/identify';
+const API_URL = "https://your-app-name.onrender.com/api/identify";
 ```
 
 ---
@@ -105,11 +114,13 @@ const API_URL = 'https://your-app-name.onrender.com/api/identify';
 ## Free Tier Limits
 
 **Render.com:**
+
 - 750 hours/month (enough for 24/7)
 - Sleeps after 15 min inactivity
 - Wakes up in ~30 seconds
 
 **Railway.app:**
+
 - $5 credit/month
 - No sleep
 - ~500 hours of uptime
