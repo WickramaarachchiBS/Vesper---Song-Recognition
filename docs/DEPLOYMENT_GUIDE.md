@@ -1,342 +1,218 @@
-# Free Hosting Options for Students - Deployment Guide
+# Azure Deployment Guide (Student Edition)
 
-## 🎓 Best Free Hosting Platforms for Students
+This guide provides a comprehensive step-by-step process to deploy the **Vesper Song Recognition** backend to **Microsoft Azure** using the **Azure for Students** subscription.
 
-### ⭐ **RECOMMENDED: Render.com** (Easiest)
+## 🎓 Why Azure for Students?
 
-- **Free Tier**: 750 hours/month (enough for 24/7)
-- **PostgreSQL**: Free database included
-- **Auto-deploy**: From GitHub
-- **Custom domain**: Supported
-- **Sleep after inactivity**: Yes (wakes up on request)
-- **Perfect for**: Students, FYP projects
-
-### 🐍 **Railway.app** (Great for Python)
-
-- **Free Tier**: $5 credit/month (usually enough)
-- **PostgreSQL**: Included
-- **Easy setup**: One-click deploy
-- **No sleep**: Stays active
-- **Perfect for**: Active development
-
-### 🚀 **Fly.io** (Good Performance)
-
-- **Free Tier**: 3 VMs, 3GB storage
-- **PostgreSQL**: Free tier available
-- **Global CDN**: Fast worldwide
-- **Perfect for**: Production apps
-
-### 🔵 **Heroku** (Classic Choice)
-
-- **Free Tier**: Removed (now paid only)
-- ❌ **Not recommended** for free hosting anymore
-
-### 🆓 **PythonAnywhere** (Python-specific)
-
-- **Free Tier**: Limited but permanent
-- **MySQL**: Free (not PostgreSQL)
-- **Good for**: Simple apps
-- ⚠️ **Limitation**: Need to use MySQL instead of PostgreSQL
+- **$100 Free Credit**: Valid for 12 months.
+- **No Credit Card Required**: Just use your student email (.edu).
+- **Professional Cloud**: Use the same infrastructure as enterprise companies.
+- **Flexible Server**: Full PostgreSQL database control.
 
 ---
 
-## 🏆 RECOMMENDED APPROACH: Render.com
-
-I'll show you step-by-step how to deploy on **Render.com** (completely free for students):
-
----
-
-## 📋 Step-by-Step: Deploy to Render.com
+## 📋 Step-by-Step Deployment Guide
 
 ### Prerequisites
 
-1. GitHub account (free)
-2. Render.com account (free) - sign up at https://render.com
+1. **Student Email** (.edu or institutional email)
+2. **GitHub Account** (for code deployment)
+3. **Azure for Students Account**: Sign up at [azure.microsoft.com/free/students](https://azure.microsoft.com/free/students)
 
 ---
 
-### Step 1: Prepare Your Code for Deployment
+### Step 1: Create Azure Resources
 
-I'll create the necessary configuration files:
+#### 1.1 Create a Resource Group
+1. Go to [Azure Portal](https://portal.azure.com).
+2. Search for **"Resource groups"** → Click **Create**.
+3. **Subscription**: Azure for Students.
+4. **Resource group name**: `vesper-rg`.
+5. **Region**: Choose the region closest to you (e.g., `Southeast Asia`, `East US`).
+6. Click **Review + Create** → **Create**.
 
-#### A. Create `render.yaml` (deployment config)
+#### 1.2 Create PostgreSQL Flexible Server
+1. Search for **"Azure Database for PostgreSQL"** → Select **Flexible Server**.
+2. Click **Create**.
+3. **Basics**:
+   - **Resource Group**: `vesper-rg`.
+   - **Server name**: `vesper-db-server` (must be unique).
+   - **Workload type**: `Development`.
+   - **Compute + storage**: Select **Burstable B1ms** (1 vCore, 2GB RAM).
+   - **Storage**: 32 GB.
+4. **Authentication**:
+   - **Method**: PostgreSQL authentication only.
+   - **Admin username**: `vesperadmin`.
+   - **Password**: Create a strong password (save this safely!).
+5. **Networking**:
+   - ✅ Check **"Allow public access from any Azure service"**.
+   - Click **"+ Add current client IP address"**.
+6. Click **Review + Create** → **Create**.
 
-#### B. Update `requirements.txt` (add production server)
-
-#### C. Create startup script
+> **Note**: Deployment takes 5-10 minutes.
 
 ---
 
-### Step 2: Push Code to GitHub
+### Step 2: Initialize the Database
 
-```bash
-# Initialize git (if not already done)
-git init
+Once the database is created, connect to it from your local machine to set up the schema.
 
-# Add all files
-git add .
+#### 2.1 Get Connection Details
+- **Host**: `vesper-db-server.postgres.database.azure.com`
+- **Username**: `vesperadmin`
+- **Password**: Your chosen password
+- **Database**: `postgres` (default)
 
-# Commit
-git commit -m "Initial commit - Vesper Song Recognition"
+#### 2.2 Run Schema Script
+Run the following commands in your local terminal (PowerShell):
 
-# Create repository on GitHub, then:
-git remote add origin https://github.com/YOUR_USERNAME/vesper-song-recognition.git
-git branch -M main
-git push -u origin main
+```powershell
+# 1. Connect to Azure PostgreSQL
+psql "host=vesper-db-server.postgres.database.azure.com port=5432 dbname=postgres user=vesperadmin password=YOUR_PASSWORD sslmode=require"
+
+# 2. Create the 'vesper' database
+postgres=> CREATE DATABASE vesper;
+postgres=> \q
+
+# 3. Run the schema file
+psql "host=vesper-db-server.postgres.database.azure.com port=5432 dbname=vesper user=vesperadmin password=YOUR_PASSWORD sslmode=require" -f sql/schema.sql
 ```
 
 ---
 
-### Step 3: Deploy on Render.com
+### Step 3: Create Azure App Service
 
-1. **Go to**: https://render.com
-2. **Sign up** with GitHub
-3. **Click**: "New +" → "Web Service"
-4. **Connect** your GitHub repository
-5. **Configure**:
-   - **Name**: `vesper-song-recognition`
-   - **Environment**: `Python 3`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-   - **Plan**: Free
-
-6. **Add PostgreSQL Database**:
-   - Click "New +" → "PostgreSQL"
-   - **Name**: `vesper-database`
-   - **Plan**: Free
-   - Copy the **Internal Database URL**
-
-7. **Add Environment Variables**:
-   - Go to your web service → Environment
-   - Add these variables:
-     ```
-     DB_HOST=<from database URL>
-     DB_PORT=5432
-     DB_NAME=<from database URL>
-     DB_USER=<from database URL>
-     DB_PASSWORD=<from database URL>
-     ```
-   - Or use single variable:
-     ```
-     DATABASE_URL=<full internal database URL>
-     ```
-
-8. **Deploy**: Click "Create Web Service"
+1. Search for **"App Service"** → Click **Create** → **Web App**.
+2. **Basics**:
+   - **Resource Group**: `vesper-rg`.
+   - **Name**: `vesper-song-recognition` (unique URL).
+   - **Publish**: Code.
+   - **Runtime stack**: `Python 3.11`.
+   - **Operating System**: Linux.
+   - **Region**: Same as database.
+3. **Pricing Plan**:
+   - Select **Basic B1** (Recommended for stability using credits).
+   - Or **Free F1** (For testing, 60 mins CPU/day).
+4. Click **Review + Create** → **Create**.
 
 ---
 
-### Step 4: Initialize Database
+### Step 4: Configure App Service
 
-After deployment:
+#### 4.1 Set Environment Variables
+1. Go to App Service → **Configuration** → **Application settings** → **+ New application setting**.
+2. Add the following key-value pairs:
 
-```bash
-# Connect to your Render PostgreSQL
-# Use the connection string from Render dashboard
+| Name | Value |
+|------|-------|
+| `DB_HOST` | `vesper-db-server.postgres.database.azure.com` |
+| `DB_PORT` | `5432` |
+| `DB_NAME` | `vesper` |
+| `DB_USER` | `vesperadmin` |
+| `DB_PASSWORD` | `your-password` |
+| `SCM_DO_BUILD_DURING_DEPLOYMENT` | `true` |
 
-# Run schema
-psql <DATABASE_URL> -f sql/schema.sql
-```
+3. Click **Save**.
 
-Or use Render's web shell to run the schema.
-
----
-
-### Step 5: Upload Songs
-
-**Option 1**: Use cloud storage (recommended)
-
-- Upload MP3s to Google Drive, Dropbox, or AWS S3
-- Use `populate_from_cloud.py` script
-
-**Option 2**: Use Render's persistent disk (paid)
-
-- Not available on free tier
-
-**Option 3**: Populate from local, connect to remote DB
-
-- Run `populate_db.py` locally but connect to Render's database
-
----
-
-## 🌐 Your API Will Be Available At:
-
-```
-https://vesper-song-recognition.onrender.com/api/identify
-```
-
-Use this URL in your mobile app!
-
----
-
-## 💰 Cost Comparison
-
-| Platform           | Free Tier       | Database     | Sleep?      | Best For    |
-| ------------------ | --------------- | ------------ | ----------- | ----------- |
-| **Render**         | 750h/month      | PostgreSQL ✓ | Yes (30min) | Students    |
-| **Railway**        | $5 credit/month | PostgreSQL ✓ | No          | Active dev  |
-| **Fly.io**         | 3 VMs           | PostgreSQL ✓ | No          | Production  |
-| **PythonAnywhere** | Forever         | MySQL only   | No          | Simple apps |
-
----
-
-## 🎓 Student Benefits (Get More Free Credits!)
-
-### GitHub Student Developer Pack
-
-**Get**: https://education.github.com/pack
-
-**Includes**:
-
-- **DigitalOcean**: $200 credit (1 year)
-- **Heroku**: Free credits
-- **Azure**: $100 credit
-- **AWS**: Free tier + credits
-- **MongoDB Atlas**: Free cluster
-
-### Apply with:
-
-- Student email (.edu)
-- Student ID card
-- Enrollment verification
-
----
-
-## 🚀 Alternative: DigitalOcean (with Student Pack)
-
-If you get GitHub Student Pack:
-
-1. **Get $200 credit** from DigitalOcean
-2. **Create Droplet**: Ubuntu 22.04 ($6/month)
-3. **Install**:
+#### 4.2 Configure Startup Command
+1. Go to **Configuration** → **General settings**.
+2. **Startup Command**:
    ```bash
-   sudo apt update
-   sudo apt install python3-pip postgresql nginx
-   pip3 install -r requirements.txt
+   gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
    ```
-4. **Setup**: PostgreSQL, Nginx reverse proxy
-5. **Run**: With systemd service
-
-This gives you **33 months free** with student credits!
+3. Click **Save**.
 
 ---
 
-## 📱 Update Mobile App
+### Step 5: Deploy Code
 
-Change API endpoint from:
+#### Option A: Azure CLI (Recommended)
+Run in your project folder:
 
-```javascript
-// Local
-const API_URL = "http://192.168.1.x:8000/api/identify";
+```powershell
+az login
+az webapp up --name vesper-song-recognition --resource-group vesper-rg --runtime "PYTHON:3.11"
 ```
 
-To:
+#### Option B: GitHub Actions (Continuous Deployment)
+1. App Service → **Deployment Center**.
+2. Source: **GitHub**.
+3. Authorization: Connect your account.
+4. Repository: Select `vesper-song-recognition`.
+5. Branch: `main`.
+6. Click **Save**. Azure will automatically build and deploy on every push.
 
-```javascript
-// Production
-const API_URL = "https://vesper-song-recognition.onrender.com/api/identify";
+---
+
+### Step 6: Populate Database
+
+Populate your cloud database with songs from your local machine:
+
+```powershell
+# Set temporary env vars for the script
+$env:DB_HOST = "vesper-db-server.postgres.database.azure.com"
+$env:DB_PORT = "5432"
+$env:DB_NAME = "vesper"
+$env:DB_USER = "vesperadmin"
+$env:DB_PASSWORD = "your-password"
+
+# Run populate script
+python -m app.services.populate_db
 ```
 
 ---
 
-## ⚡ Important Notes
+## 🌐 API Details for Mobile App
 
-### Render Free Tier Limitations:
+Update your mobile application's base URL:
 
-- **Sleeps after 15 min** of inactivity
-- **First request** takes ~30 seconds to wake up
-- **750 hours/month** = ~24/7 for one month
-- **Good for**: FYP demos, testing
+```javascript
+// Production Azure URL
+const API_URL = "https://vesper-song-recognition.azurewebsites.net/api/identify";
+```
 
-### Solutions:
+**Available Endpoints:**
+- `GET /docs` - Swagger UI Documentation
+- `GET /health` - Health Check
+- `GET /api/songs` - List all songs
+- `POST /api/identify` - Identify song
 
-1. **Keep-alive ping**: Ping your API every 10 minutes
-2. **Show loading**: "Waking up server..." message
-3. **Upgrade**: $7/month for always-on
+---
+
+## 💰 Cost Management (Azure for Students)
+
+Your **$100 credit** lasts for 12 months.
+
+| Resource | Service Tier | Est. Cost |
+|----------|-------------|-----------|
+| **App Service** | Linux Basic B1 | ~$13/mo |
+| **Database** | Flexible Server (B1ms) | ~$13/mo |
+| **Storage** | 32 GB | ~$2/mo |
+| **Total** | | **~$28/mo** |
+
+> **Tip**: To save credits, stop the **App Service** when not in use. You can also stop the **PostgreSQL Server** (it can be stopped for up to 7 days).
 
 ---
 
 ## 🔧 Troubleshooting
 
-### "Application failed to start"
+### Application Error :(
+- Go to App Service → **Log stream**.
+- Check if `requirements.txt` is present and correct.
+- Verify environment variables properly match database credentials.
 
-- Check logs in Render dashboard
-- Verify `requirements.txt` is complete
-- Check start command is correct
+### Database Connection Failed
+- Ensure "Allow public access from any Azure service" is checked in Database Networking.
+- Check firewall rules if connecting from local PC.
 
-### "Database connection failed"
-
-- Verify environment variables
-- Check database URL is correct
-- Ensure database is in same region
-
-### "Songs not found"
-
-- Database is empty
-- Need to populate songs first
-- Use cloud storage or local populate
-
----
-
-## 📊 Recommended Setup for FYP
-
-**For Development/Testing:**
-
-- **Render.com** (free)
-- **PostgreSQL** on Render (free)
-- **Songs**: 10-20 sample songs
-
-**For Demo/Presentation:**
-
-- **Railway.app** ($5 credit)
-- Always-on, no sleep
-- Fast response times
-
-**For Production (after graduation):**
-
-- **DigitalOcean** ($6/month)
-- Full control
-- Scalable
-
----
-
-## 🎯 Next Steps
-
-1. ✅ Create GitHub account (if needed)
-2. ✅ Push code to GitHub
-3. ✅ Sign up for Render.com
-4. ✅ Deploy web service
-5. ✅ Create PostgreSQL database
-6. ✅ Set environment variables
-7. ✅ Initialize database schema
-8. ✅ Populate with songs
-9. ✅ Test API endpoint
-10. ✅ Update mobile app URL
+### 504 Gateway Timeout
+- Increase Gunicorn timeout or worker count if processing large files.
+- Ensure the server isn't running out of memory (check App Service **Metrics**).
 
 ---
 
 ## 📚 Helpful Links
 
-- **Render Docs**: https://render.com/docs
-- **Railway Docs**: https://docs.railway.app
-- **Fly.io Docs**: https://fly.io/docs
-- **GitHub Student Pack**: https://education.github.com/pack
-- **FastAPI Deployment**: https://fastapi.tiangolo.com/deployment/
-
----
-
-## 💡 Pro Tips
-
-1. **Use environment variables** for all secrets
-2. **Enable HTTPS** (automatic on Render)
-3. **Monitor logs** during development
-4. **Set up health check** endpoint
-5. **Use GitHub Actions** for auto-deploy
-6. **Keep local backup** of database
-
----
-
-## 🆘 Need Help?
-
-- **Render Community**: https://community.render.com
-- **Railway Discord**: https://discord.gg/railway
-- **Stack Overflow**: Tag with `render`, `fastapi`, `deployment`
+- [Azure Portal](https://portal.azure.com)
+- [Azure for Students](https://azure.microsoft.com/free/students)
+- [FastAPI Deployment Docs](https://fastapi.tiangolo.com/deployment/server-workers/)
