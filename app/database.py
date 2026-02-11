@@ -22,7 +22,8 @@ class Database:
             'port': settings.DB_PORT,
             'database': settings.DB_NAME,
             'user': settings.DB_USER,
-            'password': settings.DB_PASSWORD
+            'password': settings.DB_PASSWORD,
+            'sslmode': settings.DB_SSLMODE
         }
     
     @contextmanager

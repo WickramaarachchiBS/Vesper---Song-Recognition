@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     DB_NAME: str = "VesperSongData"
     DB_USER: str = "postgres"
     DB_PASSWORD: str = "admin"
+    DB_SSLMODE: str = "prefer"
     
     # Audio processing parameters
     SAMPLE_RATE: int = 44100  # Target sample rate for all audio
@@ -37,6 +38,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = True
+        extra = "allow"  # Allow extra fields from .env
 
 
 # Global settings instance
