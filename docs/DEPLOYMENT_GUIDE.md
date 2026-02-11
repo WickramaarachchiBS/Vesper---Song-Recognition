@@ -55,7 +55,7 @@ Run the following commands in your local terminal (PowerShell):
 
 ```powershell
 # 1. Connect to Azure PostgreSQL
-psql "host=vesper-db-server.postgres.database.azure.com port=5432 dbname=postgres user=vesperadmin password=AzureDB@2002 sslmode=require"
+psql "host=vesper-db-server.postgres.database.azure.com port=5432 dbname=postgres user=vesperadmin password=YOUR_PASSWORD sslmode=require"
 
 # 2. Create the 'vesper' database
 postgres=> CREATE DATABASE vesper;
