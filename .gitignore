@@ -57,8 +57,7 @@ tmp/
 *.tmp
 
 # Guide files
-docs/DEPLOY_QUICK.md
-docs/DEPLOYMENT_GUIDE.md 
+docs/
 
 
 

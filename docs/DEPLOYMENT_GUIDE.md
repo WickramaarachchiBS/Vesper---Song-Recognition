@@ -2,22 +2,9 @@
 
 This guide provides a comprehensive step-by-step process to deploy the **Vesper Song Recognition** backend to **Microsoft Azure** using the **Azure for Students** subscription.
 
-## 🎓 Why Azure for Students?
-
-- **$100 Free Credit**: Valid for 12 months.
-- **No Credit Card Required**: Just use your student email (.edu).
-- **Professional Cloud**: Use the same infrastructure as enterprise companies.
-- **Flexible Server**: Full PostgreSQL database control.
-
 ---
 
 ## 📋 Step-by-Step Deployment Guide
-
-### Prerequisites
-
-1. **Student Email** (.edu or institutional email)
-2. **GitHub Account** (for code deployment)
-3. **Azure for Students Account**: Sign up at [azure.microsoft.com/free/students](https://azure.microsoft.com/free/students)
 
 ---
 
@@ -68,7 +55,7 @@ Run the following commands in your local terminal (PowerShell):
 
 ```powershell
 # 1. Connect to Azure PostgreSQL
-psql "host=vesper-db-server.postgres.database.azure.com port=5432 dbname=postgres user=vesperadmin password=YOUR_PASSWORD sslmode=require"
+psql "host=vesper-db-server.postgres.database.azure.com port=5432 dbname=postgres user=vesperadmin password=AzureDB@2002 sslmode=require"
 
 # 2. Create the 'vesper' database
 postgres=> CREATE DATABASE vesper;
