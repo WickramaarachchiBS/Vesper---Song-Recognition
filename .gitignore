@@ -48,8 +48,8 @@ Thumbs.db
 *.sqlite
 
 # Audio files (if you want to exclude dataset)
-# dataset/*.wav
-# dataset/*.mp3
+dataset/*.wav
+dataset/*.mp3
 
 # Temporary files
 temp/
@@ -58,6 +58,3 @@ tmp/
 
 # Guide files
 docs/
-
-
-
