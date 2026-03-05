@@ -58,3 +58,7 @@ tmp/
 
 # Guide files
 docs/
+
+# md files exept README.md
+*.md
+!README.md
