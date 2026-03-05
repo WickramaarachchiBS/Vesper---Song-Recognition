@@ -71,7 +71,10 @@ def recognize_song(audio_data, sample_rate: int = None) -> Optional[Dict]:
     logger.info(f"Found {len(db_matches)} database matches")
     
     # Create lookup for query fingerprint offsets
-    query_offset_map = {hash_val: offset for hash_val, offset in query_fingerprints}
+    # Use list to handle duplicate hashes (same hash can appear at multiple times)
+    query_offset_map = defaultdict(list)
+    for hash_val, offset in query_fingerprints:
+        query_offset_map[hash_val].append(offset)
     
     # Group matches by song and calculate offset differences
     # Structure: song_id -> list of offset_diffs
@@ -82,10 +85,8 @@ def recognize_song(audio_data, sample_rate: int = None) -> Optional[Dict]:
         song_id = match['song_id']
         db_offset = match['time_offset']
         
-        # Get corresponding query offset
-        query_offset = query_offset_map.get(hash_val)
-        
-        if query_offset is not None:
+        # Check all query offsets for this hash (handles duplicate hashes)
+        for query_offset in query_offset_map.get(hash_val, []):
             # Calculate offset difference
             offset_diff = db_offset - query_offset
             song_offset_diffs[song_id].append(offset_diff)
@@ -95,13 +96,13 @@ def recognize_song(audio_data, sample_rate: int = None) -> Optional[Dict]:
     
     for song_id, offset_diffs in song_offset_diffs.items():
         # Create histogram of offset differences
-        # Round to nearest 0.1 second to account for small variations
+        # Bin to nearest 0.5 second for robustness against timing jitter
         offset_histogram = defaultdict(int)
         
         for offset_diff in offset_diffs:
-            # Round to 1 decimal place
-            rounded_offset = round(offset_diff, 1)
-            offset_histogram[rounded_offset] += 1
+            # Bin to 0.5-second intervals
+            binned_offset = round(offset_diff * 2) / 2
+            offset_histogram[binned_offset] += 1
         
         # Find the peak (most common offset)
         max_count = max(offset_histogram.values())
@@ -133,8 +134,20 @@ def recognize_song(audio_data, sample_rate: int = None) -> Optional[Dict]:
         return None
     
     # Calculate confidence score
-    # Confidence = (aligned_matches / total_query_fingerprints) * 100
-    confidence = (best_match['match_count'] / len(query_fingerprints)) * 100
+    # Primary: ratio of aligned matches to query fingerprints
+    raw_confidence = (best_match['match_count'] / len(query_fingerprints)) * 100
+    
+    # Boost confidence if there's a clear gap between best and second-best match
+    if len(song_scores) >= 2:
+        second_best = song_scores[1]['match_count']
+        if second_best > 0:
+            separation = best_match['match_count'] / second_best
+            # Scale: separation of 2x+ gives full confidence, 1x gives half
+            confidence = raw_confidence * min(separation / 2, 1.0)
+        else:
+            confidence = raw_confidence
+    else:
+        confidence = raw_confidence
     
     result = {
         'song_id': song_id,

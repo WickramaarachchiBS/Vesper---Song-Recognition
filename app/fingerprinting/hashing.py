@@ -119,14 +119,28 @@ def fingerprint_audio(audio_data, sample_rate: int = None) -> List[Tuple[str, fl
     Returns:
         List of (hash, time_offset) tuples
     """
-    from app.fingerprinting.spectrogram import generate_spectrogram
-    from app.fingerprinting.peak_detection import detect_peaks, sort_peaks_by_time
+    from app.fingerprinting.spectrogram import generate_spectrogram, spectrogram_to_db
+    from app.fingerprinting.peak_detection import detect_peaks, sort_peaks_by_time, filter_peaks_by_frequency
+    from app.fingerprinting.audio_utils import preprocess_audio
+    
+    # Preprocess audio (normalize + bandpass filter)
+    audio_data = preprocess_audio(audio_data)
     
     # Generate spectrogram
     spectrogram, frequencies = generate_spectrogram(audio_data)
     
+    # Convert to dB scale for better peak detection
+    spectrogram = spectrogram_to_db(spectrogram)
+    
     # Detect peaks
     peaks = detect_peaks(spectrogram)
+    
+    # Filter out very low and very high frequencies (focus on 300 Hz - 5000 Hz)
+    # Convert Hz to frequency bin indices
+    freq_resolution = settings.SAMPLE_RATE / settings.WINDOW_SIZE
+    min_freq_idx = int(300 / freq_resolution)
+    max_freq_idx = int(5000 / freq_resolution)
+    peaks = filter_peaks_by_frequency(peaks, min_freq_idx=min_freq_idx, max_freq_idx=max_freq_idx)
     
     # Sort peaks by time
     peaks = sort_peaks_by_time(peaks)

@@ -76,7 +76,7 @@ def process_audio_file(file_path: str, title: str = None, artist: str = None) ->
     ]
     
     # Insert fingerprints in batches
-    batch_size = 1000
+    batch_size = 5000
     for i in range(0, len(fingerprint_records), batch_size):
         batch = fingerprint_records[i:i + batch_size]
         Fingerprint.insert_batch(batch)

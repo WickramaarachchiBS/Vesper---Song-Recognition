@@ -24,12 +24,12 @@ class Settings(BaseSettings):
     HOP_SIZE: int = 512  # Hop size for STFT
     
     # Peak detection parameters
-    PEAK_NEIGHBORHOOD_SIZE: int = 10  # Neighborhood size for local maxima
-    MIN_AMPLITUDE: float = 10.0  # Minimum amplitude threshold for peaks
+    PEAK_NEIGHBORHOOD_SIZE: int = 15  # Neighborhood size for local maxima
+    MIN_AMPLITUDE: float = -60.0  # Minimum amplitude threshold for peaks (dB scale)
     
     # Fingerprinting parameters
-    FAN_VALUE: int = 5  # Number of target peaks per anchor
-    MIN_TIME_DELTA: int = 0  # Minimum time difference (in frames)
+    FAN_VALUE: int = 15  # Number of target peaks per anchor
+    MIN_TIME_DELTA: int = 1  # Minimum time difference (in frames)
     MAX_TIME_DELTA: int = 200  # Maximum time difference (in frames)
     
     # Recognition parameters

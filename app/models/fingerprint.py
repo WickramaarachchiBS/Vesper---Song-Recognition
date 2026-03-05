@@ -5,6 +5,7 @@ Fingerprint database operations.
 from typing import List, Tuple, Dict
 import logging
 
+from psycopg2.extras import execute_values
 from app.database import db
 
 logger = logging.getLogger(__name__)
@@ -25,13 +26,15 @@ class Fingerprint:
             return
         
         with db.get_cursor() as cursor:
-            # Use executemany for batch insert
-            cursor.executemany(
+            # Use execute_values for fast bulk insert (single query with multiple rows)
+            execute_values(
+                cursor,
                 """
                 INSERT INTO fingerprints (hash, song_id, time_offset)
-                VALUES (%s, %s, %s)
+                VALUES %s
                 """,
-                fingerprints
+                fingerprints,
+                page_size=5000
             )
             logger.info(f"Inserted {len(fingerprints)} fingerprints")
     
