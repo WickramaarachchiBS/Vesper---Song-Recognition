@@ -6,13 +6,54 @@
 
 Your mobile app needs to:
 
-1. Record or select an audio file
-2. Send it to the server via HTTP POST
-3. Receive the recognition result
+1. Record or select an audio clip
+2. Extract peak features on-device (primary path)
+3. Send peaks as JSON to the backend
+4. Fallback to audio upload when needed
+5. Receive the recognition result
 
 ---
 
-## 🔌 API Endpoint
+## 🔌 API Endpoints
+
+### Primary Endpoint (Recommended)
+
+```
+POST http://YOUR_SERVER_IP:8000/api/identify-peaks
+```
+
+Headers:
+
+```
+Content-Type: application/json
+```
+
+Request body:
+
+```json
+{
+  "schema_version": "1.0",
+  "clip_duration_seconds": 10.0,
+  "sample_rate_hz": 44100,
+  "hop_size": 512,
+  "window_size": 4096,
+  "peaks": [
+    { "freq_idx": 123, "time_idx": 456 },
+    { "freq_idx": 98, "time_idx": 462 }
+  ],
+  "client_meta": {
+    "platform": "android",
+    "app_version": "1.0.0"
+  }
+}
+```
+
+Notes:
+
+- `sample_rate_hz`, `hop_size`, and `window_size` must match backend settings.
+- `peaks` must be a non-empty list.
+
+### Fallback Endpoint (Compatibility)
 
 ```
 POST http://YOUR_SERVER_IP:8000/api/identify
@@ -28,13 +69,13 @@ POST http://YOUR_SERVER_IP:8000/api/identify
 
 ## 📤 Request Format
 
-### Headers
+### Fallback Headers
 
 ```
 Content-Type: multipart/form-data
 ```
 
-### Body
+### Fallback Body
 
 - **Field name**: `audio_file`
 - **File type**: MP3, WAV, FLAC, OGG, or M4A
@@ -78,6 +119,25 @@ Content-Type: multipart/form-data
 ---
 
 ## 📱 Platform-Specific Examples
+
+### React Native / Expo (Peak-Based Primary)
+
+```javascript
+async function recognizeFromPeaks(peaksPayload) {
+  const response = await fetch(
+    "http://YOUR_SERVER_IP:8000/api/identify-peaks",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(peaksPayload),
+    },
+  );
+
+  return response.json();
+}
+```
 
 ### React Native / Expo
 

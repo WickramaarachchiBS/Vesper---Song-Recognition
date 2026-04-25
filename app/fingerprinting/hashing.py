@@ -11,6 +11,36 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 
+def fingerprints_from_peak_points(peaks: List[Tuple[int, int]]) -> List[Tuple[str, float]]:
+    """
+    Convert client-provided peak points into fingerprints.
+
+    Args:
+        peaks: List of (freq_idx, time_idx) tuples.
+
+    Returns:
+        List of (hash, time_offset) tuples.
+    """
+    if not peaks:
+        return []
+
+    validated_peaks = []
+    for freq_idx, time_idx in peaks:
+        freq_val = int(freq_idx)
+        time_val = int(time_idx)
+
+        if freq_val < 0 or time_val < 0:
+            continue
+
+        validated_peaks.append((freq_val, time_val))
+
+    if not validated_peaks:
+        logger.warning("No valid peak points after validation")
+        return []
+
+    return generate_fingerprints(validated_peaks)
+
+
 def generate_fingerprints(peaks: List[Tuple[int, int]]) -> List[Tuple[str, float]]:
     """
     Generate fingerprint hashes from peaks using combinatorial hashing.
