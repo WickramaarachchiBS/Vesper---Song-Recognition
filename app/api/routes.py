@@ -8,6 +8,8 @@ from typing import Dict, List, Optional
 import tempfile
 import os
 import logging
+import time
+import asyncio
 
 from app.fingerprinting.audio_utils import load_audio
 from app.config import settings
@@ -84,8 +86,11 @@ async def identify_song(audio_file: UploadFile = File(...)):
         # Load audio
         audio_data, sample_rate = load_audio(temp_path)
         
-        # Recognize song
-        result = recognize_song(audio_data, sample_rate)
+        # Recognize song (run in thread to avoid blocking async loop)
+        t0 = time.monotonic()
+        result = await asyncio.to_thread(recognize_song, audio_data, sample_rate)
+        t1 = time.monotonic()
+        logger.info(f"Full-audio recognition total time: {(t1 - t0)*1000:.1f}ms")
         
         # Clean up temporary file
         os.unlink(temp_path)
@@ -152,7 +157,11 @@ async def identify_song_from_peaks(request: PeakRecognitionRequest):
 
     try:
         peaks = [(peak.freq_idx, peak.time_idx) for peak in request.peaks]
-        result = recognize_song_from_peaks(peaks)
+        t0 = time.monotonic()
+        # Run CPU/IO-bound recognition in a thread to avoid blocking the event loop
+        result = await asyncio.to_thread(recognize_song_from_peaks, peaks)
+        t1 = time.monotonic()
+        logger.info(f"Peak recognition total time: {(t1 - t0)*1000:.1f}ms")
 
         if result:
             return RecognitionResponse(

@@ -10,6 +10,7 @@ from app.fingerprinting.hashing import fingerprint_audio, fingerprints_from_peak
 from app.models.fingerprint import Fingerprint
 from app.models.song import Song
 from app.config import settings
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,10 @@ def _recognize_from_fingerprints(query_fingerprints: List[Tuple[str, float]]) ->
     query_hashes = [hash_val for hash_val, _ in query_fingerprints]
 
     # Find matching fingerprints in database
+    t_db_start = time.monotonic()
     db_matches = Fingerprint.find_matches(query_hashes)
+    t_db_end = time.monotonic()
+    logger.info(f"DB fingerprint query took {(t_db_end - t_db_start)*1000:.1f}ms")
 
     if not db_matches:
         logger.info("No matching fingerprints found in database")
@@ -51,11 +55,19 @@ def _recognize_from_fingerprints(query_fingerprints: List[Tuple[str, float]]) ->
     # Group matches by song and calculate offset differences
     # Structure: song_id -> list of offset_diffs
     song_offset_diffs = defaultdict(list)
+    # Also collect song metadata returned from the DB join
+    song_meta = {}
 
     for match in db_matches:
         hash_val = match['hash']
         song_id = match['song_id']
         db_offset = match['time_offset']
+        # store metadata if present
+        if 'title' in match and match.get('title'):
+            song_meta[song_id] = {
+                'title': match.get('title'),
+                'artist': match.get('artist')
+            }
 
         # Check all query offsets for this hash (handles duplicate hashes)
         for query_offset in query_offset_map.get(hash_val, []):
@@ -65,6 +77,7 @@ def _recognize_from_fingerprints(query_fingerprints: List[Tuple[str, float]]) ->
 
     # For each song, find the most common offset difference
     song_scores = []
+    t_match_start = time.monotonic()
 
     for song_id, offset_diffs in song_offset_diffs.items():
         # Create histogram of offset differences
@@ -87,6 +100,9 @@ def _recognize_from_fingerprints(query_fingerprints: List[Tuple[str, float]]) ->
                 'total_matches': len(offset_diffs)
             })
 
+    t_match_end = time.monotonic()
+    logger.info(f"Offset matching took {(t_match_end - t_match_start)*1000:.1f}ms")
+
     if not song_scores:
         logger.info("No songs met minimum match threshold")
         return None
@@ -98,8 +114,8 @@ def _recognize_from_fingerprints(query_fingerprints: List[Tuple[str, float]]) ->
     best_match = song_scores[0]
     song_id = best_match['song_id']
 
-    # Get song metadata
-    song = Song.get_by_id(song_id)
+    # Get song metadata (from DB join results if available)
+    song = song_meta.get(song_id) or Song.get_by_id(song_id)
 
     if not song:
         logger.error(f"Song ID {song_id} not found in database")

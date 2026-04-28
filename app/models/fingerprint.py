@@ -55,13 +55,13 @@ class Fingerprint:
             return []
         
         with db.get_cursor() as cursor:
-            # Use IN clause for efficient batch lookup
-            # Convert list to tuple for psycopg2
+            # Join with songs table to return metadata in the same query.
             cursor.execute(
                 """
-                SELECT hash, song_id, time_offset
-                FROM fingerprints
-                WHERE hash = ANY(%s)
+                SELECT f.hash, f.song_id, f.time_offset, s.title, s.artist
+                FROM fingerprints f
+                JOIN songs s ON f.song_id = s.id
+                WHERE f.hash = ANY(%s)
                 """,
                 (hashes,)
             )

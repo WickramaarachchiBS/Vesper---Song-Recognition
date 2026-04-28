@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     
     # Recognition parameters
     MIN_MATCH_COUNT: int = 5  # Minimum matches required for recognition
+    # Database connection pool
+    DB_POOL_MIN: int = 1
+    DB_POOL_MAX: int = 10
     
     class Config:
         env_file = ".env"

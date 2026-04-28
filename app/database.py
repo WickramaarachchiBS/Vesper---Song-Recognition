@@ -4,6 +4,7 @@ Database connection management using psycopg2.
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from psycopg2.pool import SimpleConnectionPool
 from contextlib import contextmanager
 from typing import Generator
 import logging
@@ -25,6 +26,17 @@ class Database:
             'password': settings.DB_PASSWORD,
             'sslmode': settings.DB_SSLMODE
         }
+        # Initialize a simple connection pool to avoid creating a new
+        # TCP connection for every request. Fall back to direct
+        # connections if pool creation fails.
+        self.pool = None
+        try:
+            minconn = getattr(settings, 'DB_POOL_MIN', 1)
+            maxconn = getattr(settings, 'DB_POOL_MAX', 10)
+            self.pool = SimpleConnectionPool(minconn, maxconn, **self.connection_params)
+            logger.info(f"Initialized DB connection pool (min={minconn}, max={maxconn})")
+        except Exception as e:
+            logger.warning(f"Could not initialize DB pool, falling back to direct connections: {e}")
     
     @contextmanager
     def get_connection(self) -> Generator:
@@ -36,18 +48,36 @@ class Database:
             psycopg2.connection: Database connection
         """
         conn = None
-        try:
-            conn = psycopg2.connect(**self.connection_params)
-            yield conn
-            conn.commit()
-        except Exception as e:
-            if conn:
-                conn.rollback()
-            logger.error(f"Database error: {e}")
-            raise
-        finally:
-            if conn:
-                conn.close()
+        # If a pool is available, get a connection from it
+        if self.pool:
+            conn = self.pool.getconn()
+            try:
+                yield conn
+                conn.commit()
+            except Exception as e:
+                if conn:
+                    conn.rollback()
+                logger.error(f"Database error: {e}")
+                raise
+            finally:
+                if conn:
+                    try:
+                        self.pool.putconn(conn)
+                    except Exception:
+                        conn.close()
+        else:
+            try:
+                conn = psycopg2.connect(**self.connection_params)
+                yield conn
+                conn.commit()
+            except Exception as e:
+                if conn:
+                    conn.rollback()
+                logger.error(f"Database error: {e}")
+                raise
+            finally:
+                if conn:
+                    conn.close()
     
     @contextmanager
     def get_cursor(self, cursor_factory=RealDictCursor) -> Generator:
