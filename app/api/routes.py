@@ -29,6 +29,7 @@ class RecognitionResponse(BaseModel):
     match_count: int = None
     confidence: float = None
     total_fingerprints: int = None
+    queried_peak_count: int = None
     message: str = None
 
 
@@ -154,6 +155,7 @@ async def identify_song_from_peaks(request: PeakRecognitionRequest):
         )
 
     logger.info(f"Received peak-based identification request with {len(request.peaks)} peaks")
+    queried_peak_count = len(request.peaks)
 
     try:
         peaks = [(peak.freq_idx, peak.time_idx) for peak in request.peaks]
@@ -171,12 +173,14 @@ async def identify_song_from_peaks(request: PeakRecognitionRequest):
                 artist=result['artist'],
                 match_count=result['match_count'],
                 confidence=result['confidence'],
-                total_fingerprints=result['total_fingerprints']
+                total_fingerprints=result['total_fingerprints'],
+                queried_peak_count=queried_peak_count
             )
 
         return RecognitionResponse(
             success=False,
-            message="No matching song found in database"
+            queried_peak_count=queried_peak_count,
+            message="No matching song found in database. Please try again."
         )
 
     except Exception as e:
