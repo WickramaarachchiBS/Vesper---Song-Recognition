@@ -137,6 +137,23 @@ def _recognize_from_fingerprints(query_fingerprints: List[Tuple[str, float]]) ->
     else:
         confidence = raw_confidence
 
+    # Apply confidence threshold to reduce false positives
+    match_ratio = best_match['match_count'] / len(query_fingerprints)
+    second_best = song_scores[1]['match_count'] if len(song_scores) >= 2 else 0
+    separation = (best_match['match_count'] / second_best) if second_best > 0 else float('inf')
+    
+    if len(query_fingerprints) < settings.MIN_QUERY_FINGERPRINTS:
+        logger.info(f"Recognition rejected: insufficient fingerprints (got {len(query_fingerprints)}, need {settings.MIN_QUERY_FINGERPRINTS})")
+        return None
+    
+    if match_ratio < settings.CONFIDENCE_THRESHOLD:
+        logger.info(f"Recognition rejected: low match ratio {match_ratio:.2f} < {settings.CONFIDENCE_THRESHOLD}")
+        return None
+    
+    if separation < settings.MIN_SEPARATION_RATIO:
+        logger.info(f"Recognition rejected: ambiguous (separation={separation:.2f} < {settings.MIN_SEPARATION_RATIO})")
+        return None
+
     result = {
         'song_id': song_id,
         'title': song['title'],
