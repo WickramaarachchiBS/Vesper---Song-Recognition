@@ -34,9 +34,6 @@ class Settings(BaseSettings):
     
     # Recognition parameters
     MIN_MATCH_COUNT: int = 5  # Minimum matches required for recognition
-    CONFIDENCE_THRESHOLD: float = 0.7  # Minimum confidence ratio to accept a match (0-1)
-    MIN_QUERY_FINGERPRINTS: int = 15  # Reject queries with fewer fingerprints
-    MIN_SEPARATION_RATIO: float = 1.5  # Reject matches if runner-up is too close
     # Database connection pool
     DB_POOL_MIN: int = 1
     DB_POOL_MAX: int = 10
